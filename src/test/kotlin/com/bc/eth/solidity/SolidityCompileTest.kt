@@ -1,37 +1,38 @@
 package com.bc.eth.solidity
 
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
-import org.web3j.sokt.SolcArguments
-import org.web3j.sokt.SolidityFile
-import java.nio.file.Files
+import org.junit.jupiter.api.Test
+import org.web3j.abi.FunctionEncoder
+import org.web3j.abi.datatypes.Type
+import org.web3j.abi.datatypes.Utf8String
+import org.web3j.tx.gas.StaticGasProvider
+import java.io.BufferedReader
+import java.io.FileReader
+import java.math.BigInteger
 import java.nio.file.Paths
+import kotlin.io.path.absolutePathString
 
 class SolidityCompileTest {
-//    @ParameterizedTest
-//    @ValueSource(strings = ["Token.sol"])
-    fun compilerCompilesSolidityFiles(solFileName: String) {
-        val outputDir = Paths.get("./build/contracts")
-        Files.createDirectory(outputDir)
+    val GAS_PRICE: Long = 986181641
+    val GAS_LIMIT: Long = 2656250000
 
-        val solidityToCompile = this.javaClass.getResource("/$solFileName")!!.readText()
+    private lateinit var token: Web3jHelper.InnerClass
 
-        val solidityFile = Paths.get(outputDir.toString(), solFileName).toFile()
-        solidityFile.writeText(solidityToCompile)
+    private fun deploy() {
+        var bin = "0x"
+        val projectDir = Paths.get("").absolutePathString()
+        val solidityFile = Paths.get("$projectDir/build/resources/main/solidity", "Token.bin").toFile()
+        val reader = BufferedReader(FileReader(solidityFile, Charsets.UTF_8))
+        reader.lines().forEach { bin += it }
+        val input = listOf<Type<*>>(Utf8String("SOL_TEST"), Utf8String("SOL_TEST_V1"))
+        val emptyConstructor = FunctionEncoder.encodeConstructor(input)
 
+        val gasProvider = StaticGasProvider(BigInteger.valueOf(GAS_PRICE), BigInteger.valueOf(GAS_LIMIT))
 
+        token = Web3jHelper.create(bin, gasProvider).deploy(emptyConstructor)
+    }
 
-        val compilerInstance = SolidityFile(solidityFile.absolutePath).getCompilerInstance()
-        val result = compilerInstance.execute(
-            SolcArguments.OUTPUT_DIR.param { outputDir.toString() },
-            SolcArguments.AST,
-            SolcArguments.BIN,
-            SolcArguments.OVERWRITE
-        )
-        assertEquals(0, result.exitCode)
-        assertNotEquals(0, result.stdOut.length + result.stdErr.length)
-        assertTrue(Paths.get(outputDir.toString(), "${solFileName.dropLast(4)}.bin").toFile().exists())
-        assertTrue(Paths.get(outputDir.toString(), "$solFileName.ast").toFile().exists())
+    @Test
+    fun compilerCompilesSolidityFiles() {
+        deploy()
     }
 }

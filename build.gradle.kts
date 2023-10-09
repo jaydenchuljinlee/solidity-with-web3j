@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.web3j.solidity.gradle.plugin.OutputComponent
 
 plugins {
 	id("org.springframework.boot") version "2.7.17-SNAPSHOT"
@@ -7,6 +6,10 @@ plugins {
 	id("org.web3j.solidity") version "0.3.6"
 	kotlin("jvm") version "1.6.21"
 	kotlin("plugin.spring") version "1.6.21"
+}
+
+solidity {
+	version = "0.8.18"
 }
 
 apply(plugin = "org.web3j.solidity")
@@ -31,11 +34,14 @@ dependencies {
 
 	implementation("org.web3j:web3j-sokt:0.2.3")
 	implementation("org.web3j.solidity:solidity-gradle-plugin:0.3.6")
+	implementation("org.web3j:core:4.9.8")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
 tasks.withType<KotlinCompile> {
+
+
 	kotlinOptions {
 		freeCompilerArgs += "-Xjsr305=strict"
 		jvmTarget = "11"
