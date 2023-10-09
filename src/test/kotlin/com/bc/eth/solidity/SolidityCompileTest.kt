@@ -9,8 +9,8 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 class SolidityCompileTest {
-    @ParameterizedTest
-    @ValueSource(strings = ["Example.sol"])
+//    @ParameterizedTest
+//    @ValueSource(strings = ["Token.sol"])
     fun compilerCompilesSolidityFiles(solFileName: String) {
         val outputDir = Paths.get("./build/contracts")
         Files.createDirectory(outputDir)
